@@ -42,7 +42,7 @@ if __name__ == '__main__':
     connection_info = (username, hostname, port)
     logger.info('Connection info:', connection_info)
 
-    application = Application.builder().token(tg_secret)
+    application = Application.builder().token(tg_secret).build()
 
     def check_user(update, context):
         if update.message.from_user.username != tg_username:
