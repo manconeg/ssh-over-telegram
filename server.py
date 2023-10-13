@@ -34,7 +34,7 @@ def parse_args():
         cs.get('username', None),
         cs['hostname'],
         cs.get('port', 22),
-        cs.get('path_to_keys', None)
+        cs.get('path_to_keys', './')
     ]
     return to_return
 
