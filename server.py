@@ -1,6 +1,7 @@
 import argparse
 import configparser
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ApplicationHandlerStop, Update
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ApplicationHandlerStop
 from handlers import new_key, start, cancel_signal, shell
 from functools import partial
 from security import get_client
