@@ -1,6 +1,6 @@
 import argparse
 import configparser
-from telegram.ext import Updater, CommandHandler, MessageHandler, filters, DispatcherHandlerStop
+from telegram.ext import Updater, CommandHandler, MessageHandler, filters, ApplicationHandlerStop
 from handlers import new_key, start, cancel_signal, shell
 from functools import partial
 from security import get_client
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     def check_user(update, context):
         if update.message.from_user.username != tg_username:
-            raise DispatcherHandlerStop
+            raise ApplicationHandlerStop
 
     dispatcher.add_handler(MessageHandler(filters.all, check_user), group=-1)
 
