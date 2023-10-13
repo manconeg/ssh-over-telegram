@@ -1,6 +1,8 @@
 from security import get_public_save_private_key, get_client
 from time import sleep
 from collections import deque
+from telegram import Update
+from telegram.ext import CallbackContext
 import threading
 import logging
 
@@ -15,9 +17,9 @@ async def start(update, context):
     await update.message.reply_text(text=text)
 
 
-async def new_key(update, context):
+async def new_key(update, context, path_to_keys):
     logger.info('Received newkey command')
-    public = get_public_save_private_key()
+    public = get_public_save_private_key(path_to_keys)
     update.message.reply_text(text=public.decode('utf-8'))
     text = "You have just received the public key. " \
            "Private key was stored in the directory from which the bot is running. " \
@@ -68,7 +70,7 @@ async def cancel_signal(update, context, client_holder, connection_info):
     await update.message.reply_text(text='### connection was reestablished')
 
 
-async def shell(update, context, client_holder, connection_info):
+async def shell(update: Update, context: CallbackContext, client_holder, connection_info):
     logger.info(f'Received shell command: {update.message.text}')
     if client_holder_is_bad(update, context, client_holder, connection_info):
         return
@@ -80,7 +82,7 @@ async def shell(update, context, client_holder, connection_info):
     await update.message.reply_text(text='### finished')
 
 
-def client_holder_is_bad(update, context, client_holder, connection_info):
+def client_holder_is_bad(update: Update, context: CallbackContext, client_holder, connection_info):
     if client_holder[0] is None:
         client_holder[0] = get_client(connection_info)
     if client_holder[0] is None:

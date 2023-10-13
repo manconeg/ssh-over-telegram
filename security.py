@@ -11,7 +11,7 @@ PRIVATE_KEY = 'private.key'
 logger = logging.getLogger()
 
 
-def get_public_save_private_key():
+def get_public_save_private_key(path_to_keys):
     key = rsa.generate_private_key(
         backend=crypto_default_backend(),
         public_exponent=65537,
@@ -28,29 +28,32 @@ def get_public_save_private_key():
         crypto_serialization.PrivateFormat.TraditionalOpenSSL,
         crypto_serialization.NoEncryption())
 
-    with open(PUBLIC_KEY, 'wb') as f:
+    with open(path_to_keys + PUBLIC_KEY, 'wb') as f:
         f.write(public_key)
 
-    with open(PRIVATE_KEY, 'wb') as f:
+    with open(path_to_keys + PRIVATE_KEY, 'wb') as f:
         f.write(private_key)
 
     # Set read and write permission for user only
-    os.chmod(PUBLIC_KEY, 0o0600)
-    os.chmod(PRIVATE_KEY, 0o0600)
+    os.chmod(path_to_keys + PUBLIC_KEY, 0o0600)
+    os.chmod(path_to_keys + PRIVATE_KEY, 0o0600)
 
     return public_key
 
 
 def get_client(connection_info):
-    if not os.path.exists(PRIVATE_KEY):
+    username, hostname, port, path_to_keys = connection_info
+    if not os.path.exists(path_to_keys):
+        os.mkdir(path_to_keys)
+    keyPath = path_to_keys + PRIVATE_KEY
+    if not os.path.exists(keyPath):
         return None
     client = paramiko.SSHClient()
 
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # TODO change it in future updates
 
     try:
-        username, hostname, port = connection_info
-        client.connect(username=username, hostname=hostname, port=port, key_filename=PRIVATE_KEY, allow_agent=False, look_for_keys=False)
+        client.connect(username=username, hostname=hostname, port=port, key_filename=keyPath, allow_agent=False, look_for_keys=False)
     except (BadHostKeyException, SSHException):
         logger.error(msg='Cannot establish connection', exc_info=True)
         return None

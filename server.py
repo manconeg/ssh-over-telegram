@@ -33,14 +33,15 @@ def parse_args():
         cs['tg_bot_token'],
         cs.get('username', None),
         cs['hostname'],
-        cs.get('port', 22)
+        cs.get('port', 22),
+        cs.get('path_to_keys', None)
     ]
     return to_return
 
 
 if __name__ == '__main__':
-    tg_username, tg_secret, username, hostname, port = parse_args()
-    connection_info = (username, hostname, port)
+    tg_username, tg_secret, username, hostname, port, path_to_keys = parse_args()
+    connection_info = (username, hostname, port, path_to_keys)
     logger.info('Connection info:', connection_info)
 
     application = Application.builder().token(tg_secret).build()
@@ -53,12 +54,12 @@ if __name__ == '__main__':
 
     application.add_handler(CommandHandler('start', start))
 
-    application.add_handler(CommandHandler('newkey', partial(new_key)))
+    application.add_handler(CommandHandler('newkey', partial(new_key, path_to_keys=path_to_keys)))
 
     client_holder = [get_client(connection_info)]
 
     application.add_handler(CommandHandler('c', partial(cancel_signal, client_holder=client_holder, connection_info=connection_info)))
 
-    application.add_handler(MessageHandler(filters.Text, partial(shell, client_holder=client_holder, connection_info=connection_info)))
+    application.add_handler(MessageHandler(filters.TEXT, partial(shell, client_holder=client_holder, connection_info=connection_info)))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
