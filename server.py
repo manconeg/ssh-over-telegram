@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     application = Application.builder().token(tg_secret).build()
 
-    def check_user(update, context):
+    async def check_user(update, context):
         if update.message.from_user.username != tg_username:
             raise ApplicationHandlerStop
 
