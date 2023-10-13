@@ -63,7 +63,7 @@ class Buffer:
 
 async def cancel_signal(update, context, client_holder, connection_info):
     logger.info('Received cancel signal command')
-    if client_holder_is_bad(update, context, client_holder, connection_info):
+    if await client_holder_is_bad(update, context, client_holder, connection_info):
         return
     client_holder[0].close()
     client_holder[0] = get_client(connection_info)
@@ -72,7 +72,7 @@ async def cancel_signal(update, context, client_holder, connection_info):
 
 async def shell(update: Update, context: CallbackContext, client_holder, connection_info):
     logger.info(f'Received shell command: {update.message.text}')
-    if client_holder_is_bad(update, context, client_holder, connection_info):
+    if await client_holder_is_bad(update, context, client_holder, connection_info):
         return
     _, stdout, _ = client_holder[0].exec_command(update.message.text, get_pty=True)
     buffer = Buffer(update, update.message.chat_id)
@@ -82,7 +82,7 @@ async def shell(update: Update, context: CallbackContext, client_holder, connect
     await update.message.reply_text(text='### finished')
 
 
-def client_holder_is_bad(update: Update, context: CallbackContext, client_holder, connection_info):
+async def client_holder_is_bad(update: Update, context: CallbackContext, client_holder, connection_info):
     if client_holder[0] is None:
         client_holder[0] = get_client(connection_info)
     if client_holder[0] is None:
