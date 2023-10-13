@@ -48,7 +48,7 @@ if __name__ == '__main__':
         if update.message.from_user.username != tg_username:
             raise ApplicationHandlerStop
 
-    application.add_handler(MessageHandler(filters.all, check_user), group=-1)
+    application.add_handler(MessageHandler(filters.ALL, check_user), group=-1)
 
     application.add_handler(CommandHandler('start', start))
 
