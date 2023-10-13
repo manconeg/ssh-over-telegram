@@ -65,7 +65,7 @@ async def cancel_signal(update, context, client_holder, connection_info):
         return
     client_holder[0].close()
     client_holder[0] = get_client(connection_info)
-    update.message.reply_text(text='### connection was reestablished')
+    await update.message.reply_text(text='### connection was reestablished')
 
 
 async def shell(update, context, client_holder, connection_info):
