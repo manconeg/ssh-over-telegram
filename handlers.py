@@ -5,7 +5,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 import threading
 import logging
-
+import asyncio
 
 logger = logging.getLogger()
 
@@ -35,7 +35,7 @@ class Buffer:
         self._buffer = deque()
         self.timeout = timeout
         self._closed = False
-        self.thread = threading.Thread(target=self._thread_work)
+        self.thread = threading.Thread(target=asyncio.run, args=(self._thread_work(),))
         self.thread.start()
 
     def append(self, line):
