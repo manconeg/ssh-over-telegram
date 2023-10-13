@@ -1,6 +1,6 @@
 import argparse
 import configparser
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, DispatcherHandlerStop
+from telegram.ext import Updater, CommandHandler, MessageHandler, filters, DispatcherHandlerStop
 from handlers import new_key, start, cancel_signal, shell
 from functools import partial
 from security import get_client
@@ -49,7 +49,7 @@ if __name__ == '__main__':
         if update.message.from_user.username != tg_username:
             raise DispatcherHandlerStop
 
-    dispatcher.add_handler(MessageHandler(Filters.all, check_user), group=-1)
+    dispatcher.add_handler(MessageHandler(filters.all, check_user), group=-1)
 
     dispatcher.add_handler(CommandHandler('start', start))
 
@@ -59,6 +59,6 @@ if __name__ == '__main__':
 
     dispatcher.add_handler(CommandHandler('c', partial(cancel_signal, client_holder=client_holder, connection_info=connection_info)))
 
-    dispatcher.add_handler(MessageHandler(Filters.text, partial(shell, client_holder=client_holder, connection_info=connection_info)))
+    dispatcher.add_handler(MessageHandler(filters.text, partial(shell, client_holder=client_holder, connection_info=connection_info)))
 
     updater.start_polling()
