@@ -45,7 +45,7 @@ class Buffer:
         self._closed = True
         self.thread.join()
 
-    def _thread_work(self):
+    async def _thread_work(self):
         # runs in a separate thread
         while True:
             await self._send_buffer()
