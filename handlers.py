@@ -56,7 +56,7 @@ class Buffer:
         while len(self._buffer) > 0:
             lines.append(self._buffer.popleft())
         if len(lines) > 0:
-            self.bot.message.reply_text(text=''.join(lines))
+            await self.bot.message.reply_text(text=''.join(lines))
 
 
 async def cancel_signal(update, context, client_holder, connection_info):
