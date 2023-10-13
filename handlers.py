@@ -12,7 +12,7 @@ async def start(update, context):
     logger.info('Received start command')
     text = "Hello. If you are new here or want to change your ssh key pair, run /newkey. " \
            "Please note that this command will overwrite old private key."
-    update.message.reply_text(text=text)
+    await update.message.reply_text(text=text)
 
 
 def new_key(update, context):
