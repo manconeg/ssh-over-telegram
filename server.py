@@ -1,6 +1,6 @@
 import argparse
 import configparser
-from telegram.ext import Updater, CommandHandler, MessageHandler, filters, ApplicationHandlerStop
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ApplicationHandlerStop
 from handlers import new_key, start, cancel_signal, shell
 from functools import partial
 from security import get_client
@@ -42,23 +42,22 @@ if __name__ == '__main__':
     connection_info = (username, hostname, port)
     logger.info('Connection info:', connection_info)
 
-    updater = Updater(token=tg_secret, use_context=True)
-    dispatcher = updater.dispatcher
+    application = Application.builder().token(tg_secret)
 
     def check_user(update, context):
         if update.message.from_user.username != tg_username:
             raise ApplicationHandlerStop
 
-    dispatcher.add_handler(MessageHandler(filters.all, check_user), group=-1)
+    application.add_handler(MessageHandler(filters.all, check_user), group=-1)
 
-    dispatcher.add_handler(CommandHandler('start', start))
+    application.add_handler(CommandHandler('start', start))
 
-    dispatcher.add_handler(CommandHandler('newkey', partial(new_key)))
+    application.add_handler(CommandHandler('newkey', partial(new_key)))
 
     client_holder = [get_client(connection_info)]
 
-    dispatcher.add_handler(CommandHandler('c', partial(cancel_signal, client_holder=client_holder, connection_info=connection_info)))
+    application.add_handler(CommandHandler('c', partial(cancel_signal, client_holder=client_holder, connection_info=connection_info)))
 
-    dispatcher.add_handler(MessageHandler(filters.text, partial(shell, client_holder=client_holder, connection_info=connection_info)))
+    application.add_handler(MessageHandler(filters.text, partial(shell, client_holder=client_holder, connection_info=connection_info)))
 
-    updater.start_polling()
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
