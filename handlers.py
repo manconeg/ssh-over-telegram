@@ -15,7 +15,7 @@ async def start(update, context):
     await update.message.reply_text(text=text)
 
 
-def new_key(update, context):
+async def new_key(update, context):
     logger.info('Received newkey command')
     public = get_public_save_private_key()
     update.message.reply_text(text=public.decode('utf-8'))
@@ -23,7 +23,7 @@ def new_key(update, context):
            "Private key was stored in the directory from which the bot is running. " \
            "Please, add it to the authorized keys on the server. " \
            "This can be done, by appending public key to server's authorized_keys file (~/.ssh/authorized_keys)."
-    update.message.reply_text(text=text)
+    await update.message.reply_text(text=text)
 
 
 class Buffer:
@@ -68,7 +68,7 @@ async def cancel_signal(update, context, client_holder, connection_info):
     update.message.reply_text(text='### connection was reestablished')
 
 
-def shell(update, context, client_holder, connection_info):
+async def shell(update, context, client_holder, connection_info):
     logger.info(f'Received shell command: {update.message.text}')
     if client_holder_is_bad(update, context, client_holder, connection_info):
         return
@@ -77,7 +77,7 @@ def shell(update, context, client_holder, connection_info):
     for i, line in enumerate(iter(stdout.readline, '')):
         buffer.append(line)
     buffer.close()
-    update.message.reply_text(text='### finished')
+    await update.message.reply_text(text='### finished')
 
 
 def client_holder_is_bad(update, context, client_holder, connection_info):
