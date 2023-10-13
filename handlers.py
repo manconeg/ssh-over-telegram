@@ -51,7 +51,7 @@ class Buffer:
                 return
             sleep(self.timeout)
 
-    def _send_buffer(self):
+    async def _send_buffer(self):
         lines = []
         while len(self._buffer) > 0:
             lines.append(self._buffer.popleft())
