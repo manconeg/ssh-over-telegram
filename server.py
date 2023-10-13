@@ -58,6 +58,6 @@ if __name__ == '__main__':
 
     application.add_handler(CommandHandler('c', partial(cancel_signal, client_holder=client_holder, connection_info=connection_info)))
 
-    application.add_handler(MessageHandler(filters.text, partial(shell, client_holder=client_holder, connection_info=connection_info)))
+    application.add_handler(MessageHandler(filters.Text, partial(shell, client_holder=client_holder, connection_info=connection_info)))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
