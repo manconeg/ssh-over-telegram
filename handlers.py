@@ -20,7 +20,7 @@ async def start(update, context):
 async def new_key(update, context, path_to_keys):
     logger.info('Received newkey command')
     public = get_public_save_private_key(path_to_keys)
-    update.message.reply_text(text=public.decode('utf-8'))
+    await update.message.reply_text(text=public.decode('utf-8'))
     text = "You have just received the public key. " \
            "Private key was stored in the directory from which the bot is running. " \
            "Please, add it to the authorized keys on the server. " \
@@ -48,7 +48,7 @@ class Buffer:
     def _thread_work(self):
         # runs in a separate thread
         while True:
-            self._send_buffer()
+            await self._send_buffer()
             if self._closed:
                 return
             sleep(self.timeout)
@@ -87,6 +87,6 @@ def client_holder_is_bad(update: Update, context: CallbackContext, client_holder
         client_holder[0] = get_client(connection_info)
     if client_holder[0] is None:
         logger.warning('Some problem with connection')
-        update.message.reply_text(text='### some problem with the connection')
+        await update.message.reply_text(text='### some problem with the connection')
         return True
     return False
