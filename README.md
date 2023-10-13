@@ -9,10 +9,10 @@ Create personal bot:
 For more instructions, look [here](https://core.telegram.org/bots#6-botfather).
 
 Start bot code on the host of your choice:
-1. Run `git clone https://github.com/glebmak/telegram_ssh.git`
+1. Run `git clone https://github.com/manconeg/ssh-over-telegram.git`
 1. Create `config` file and place it in the folder with repository. 
 Find more instruction on this below.
-1. Install all requirements needed to run the code `pip install -r requirements.py`
+1. Install all requirements needed to run the code `pip install -r requirements.txt`
 1. Start server `python server.py`. Note that files will be saved to the directory from which you run this command.
 
 Talk to bot:
