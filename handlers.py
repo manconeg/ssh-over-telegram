@@ -2,7 +2,6 @@ from security import get_public_save_private_key, get_client
 from time import sleep
 from collections import deque
 import threading
-from telegram.ext.dispatcher import run_async
 import logging
 
 
@@ -60,8 +59,7 @@ class Buffer:
             self.bot.message.reply_text(text=''.join(lines))
 
 
-@run_async
-def cancel_signal(update, context, client_holder, connection_info):
+async def cancel_signal(update, context, client_holder, connection_info):
     logger.info('Received cancel signal command')
     if client_holder_is_bad(update, context, client_holder, connection_info):
         return
