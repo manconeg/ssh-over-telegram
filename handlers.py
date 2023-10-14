@@ -1,21 +1,28 @@
-from security import get_public_save_private_key, get_client
-from time import sleep
-from collections import deque
+from security import get_public_save_private_key
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, ApplicationHandlerStop
+from client import Client
+from ai import Ai
 import logging
+from functools import partial
 
 logger = logging.getLogger()
 
+clients: dict[str, Client] = {}
+ais: dict[str, Ai] = {}
 
-async def start(update, context):
+async def check_user(update: Update, context: CallbackContext, username: str):
+    if update.message.from_user.username != username:
+        raise ApplicationHandlerStop
+
+async def start(update: Update, context: CallbackContext):
     logger.info('Received start command')
     text = "Hello. If you are new here or want to change your ssh key pair, run /newkey. " \
            "Please note that this command will overwrite old private key."
     await update.message.reply_text(text=text)
 
 
-async def new_key(update, context, path_to_keys):
+async def new_key(update: Update, context: CallbackContext, path_to_keys: str):
     logger.info('Received newkey command')
     public = get_public_save_private_key(path_to_keys)
     await update.message.reply_text(text=public.decode('utf-8'))
@@ -25,48 +32,22 @@ async def new_key(update, context, path_to_keys):
            "This can be done, by appending public key to server's authorized_keys file (~/.ssh/authorized_keys)."
     await update.message.reply_text(text=text)
 
-async def cancel_signal(update, context, client_holder, connection_info):
-    logger.info('Received cancel signal command')
-    if await client_holder_is_bad(update, context, client_holder, connection_info):
-        return
-    client_holder[0].close()
-    client_holder[0] = get_client(connection_info)
-    await update.message.reply_text(text='### connection was reestablished')
-
-
-async def shell(update: Update, context: CallbackContext, client_holder, connection_info):
+async def shell(update: Update, context: CallbackContext, connection_info):
     logger.info(f'Received chat: {update.message.text}')
 
+    chat_id = update.message.chat_id
+    if chat_id not in ais:
+        ais[chat_id] = Ai()
 
-    messages = [ {"role": "system", "content": system} ]
-    messages.append( 
-            {"role": "user", "content": update.message.text}, 
-        )
-
-    response = openai.ChatCompletion.create( 
-            model="gpt-3.5-turbo", messages=messages 
-        )
-
-    command = response.choices[0].message.content
+    command = ais[chat_id].turn_into_command(update.message.text)
 
     logger.info(f'Running command: {command}')
 
-    if await client_holder_is_bad(update, context, client_holder, connection_info):
-        return
+    if chat_id not in clients:
+        clients[chat_id] = Client(connection_info, partial(send_message, chat_id = chat_id, bot = context.bot))
     
-    _, stdout, _ = client_holder[0].exec_command(command, get_pty=True)
-    buffer = Buffer(update, update.message.chat_id)
-    for i, line in enumerate(iter(stdout.readline, '')):
-        buffer.append(line)
-    buffer.close()
-    await update.message.reply_text(text='### finished')
+    clients[chat_id].send(command)
 
-
-async def client_holder_is_bad(update: Update, context: CallbackContext, client_holder, connection_info):
-    if client_holder[0] is None:
-        client_holder[0] = get_client(connection_info)
-    if client_holder[0] is None:
-        logger.warning('Some problem with connection')
-        await update.message.reply_text(text='### some problem with the connection')
-        return True
-    return False
+async def send_message(text, chat_id, bot):
+    ais[chat_id].add_result(text)
+    await bot.send_message(chat_id, text)

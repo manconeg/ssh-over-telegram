@@ -41,7 +41,7 @@ def get_public_save_private_key(path_to_keys):
     return public_key
 
 
-def get_client(connection_info):
+def get_client(connection_info) -> paramiko.SSHClient:
     username, hostname, port, path_to_keys = connection_info
     if not os.path.exists(path_to_keys):
         os.mkdir(path_to_keys)

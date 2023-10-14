@@ -1,10 +1,9 @@
 import argparse
 import configparser
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ApplicationHandlerStop
-from handlers import new_key, start, cancel_signal, shell
+from telegram.ext import Application, CommandHandler, MessageHandler, filters
+from handlers import new_key, start, shell, check_user
 from functools import partial
-from security import get_client
 
 import logging
 logging.basicConfig(level=logging.INFO,
@@ -44,22 +43,14 @@ if __name__ == '__main__':
     connection_info = (username, hostname, port, path_to_keys)
     logger.info('Connection info:', connection_info)
 
-    application = Application.builder().token(tg_secret).build()
+    application: Application = Application.builder().token(tg_secret).build()
 
-    async def check_user(update, context):
-        if update.message.from_user.username != tg_username:
-            raise ApplicationHandlerStop
-
-    application.add_handler(MessageHandler(filters.ALL, check_user), group=-1)
+    application.add_handler(MessageHandler(filters.ALL, partial(check_user, username=tg_username)), group=-1)
 
     application.add_handler(CommandHandler('start', start))
 
     application.add_handler(CommandHandler('newkey', partial(new_key, path_to_keys=path_to_keys)))
 
-    client_holder = [get_client(connection_info)]
-
-    application.add_handler(CommandHandler('c', partial(cancel_signal, client_holder=client_holder, connection_info=connection_info)))
-
-    application.add_handler(MessageHandler(filters.TEXT, partial(shell, client_holder=client_holder, connection_info=connection_info)))
+    application.add_handler(MessageHandler(filters.TEXT, partial(shell, connection_info=connection_info)))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
