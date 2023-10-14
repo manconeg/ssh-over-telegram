@@ -3,9 +3,7 @@ from time import sleep
 from collections import deque
 from telegram import Update
 from telegram.ext import CallbackContext
-import threading
 import logging
-import asyncio
 
 logger = logging.getLogger()
 
@@ -27,40 +25,6 @@ async def new_key(update, context, path_to_keys):
            "This can be done, by appending public key to server's authorized_keys file (~/.ssh/authorized_keys)."
     await update.message.reply_text(text=text)
 
-
-class Buffer:
-    def __init__(self, bot, chat_id, timeout=.2):
-        self.bot = bot
-        self.chat_id = chat_id
-        self._buffer = deque()
-        self.timeout = timeout
-        self._closed = False
-        self.thread = threading.Thread(target=asyncio.run, args=(self._thread_work(),))
-        self.thread.start()
-
-    def append(self, line):
-        self._buffer.append(line)
-
-    def close(self):
-        self._closed = True
-        self.thread.join()
-
-    async def _thread_work(self):
-        # runs in a separate thread
-        while True:
-            await self._send_buffer()
-            if self._closed:
-                return
-            sleep(self.timeout)
-
-    async def _send_buffer(self):
-        lines = []
-        while len(self._buffer) > 0:
-            lines.append(self._buffer.popleft())
-        if len(lines) > 0:
-            await self.bot.message.reply_text(text=''.join(lines))
-
-
 async def cancel_signal(update, context, client_holder, connection_info):
     logger.info('Received cancel signal command')
     if await client_holder_is_bad(update, context, client_holder, connection_info):
@@ -71,10 +35,26 @@ async def cancel_signal(update, context, client_holder, connection_info):
 
 
 async def shell(update: Update, context: CallbackContext, client_holder, connection_info):
-    logger.info(f'Received shell command: {update.message.text}')
+    logger.info(f'Received chat: {update.message.text}')
+
+
+    messages = [ {"role": "system", "content": system} ]
+    messages.append( 
+            {"role": "user", "content": update.message.text}, 
+        )
+
+    response = openai.ChatCompletion.create( 
+            model="gpt-3.5-turbo", messages=messages 
+        )
+
+    command = response.choices[0].message.content
+
+    logger.info(f'Running command: {command}')
+
     if await client_holder_is_bad(update, context, client_holder, connection_info):
         return
-    _, stdout, _ = client_holder[0].exec_command(update.message.text, get_pty=True)
+    
+    _, stdout, _ = client_holder[0].exec_command(command, get_pty=True)
     buffer = Buffer(update, update.message.chat_id)
     for i, line in enumerate(iter(stdout.readline, '')):
         buffer.append(line)
