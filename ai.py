@@ -1,6 +1,7 @@
 import openai 
 import os
 import json
+import queue
 from client import Client
 
 openai.api_key = os.environ["openaiToken"]
@@ -53,6 +54,7 @@ functions = [
 class Ai:
     callback = False
     user_data: dict[str, str] = {}
+    last_messages = []
 
     def __init__(self, client: Client):
         self.client = client
@@ -66,6 +68,8 @@ class Ai:
         self.messages = [ {"role": "system", "content": system} ]
         for key in self.user_data:
             self.messages.append({"role": "system", "content": f'{key}={self.user_data[key]}'})
+        for message in self.last_messages:
+            self.messages.append(message)
         self.messages.append({"role": "user", "content": chat})
 
         response = openai.ChatCompletion.create( 
@@ -91,9 +95,11 @@ class Ai:
         self.user_data[key] = value
 
     async def processClientMessage(self, clientMessage):
-        self.messages.append( 
-            {"role": "function", "name": "send_command_to_terminal", "content": clientMessage}, 
-        )
+        message = {"role": "function", "name": "send_command_to_terminal", "content": clientMessage}
+        self.last_messages.append(message)
+        if len(self.last_messages) > 5:
+            self.last_messages.pop(0)
+        self.messages.append(message)
 
         response = openai.ChatCompletion.create( 
             model="gpt-3.5-turbo",
