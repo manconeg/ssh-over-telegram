@@ -37,9 +37,10 @@ async def shell(update: Update, context: CallbackContext, connection_info):
 
     chat_id = update.message.chat_id
     if chat_id not in ais:
-        ais[chat_id] = Ai(Client(connection_info), partial(send_message, chat_id = chat_id, bot = context.bot))
+        ais[chat_id] = Ai(Client(connection_info))
+        ais[chat_id].callback = partial(send_message, chat_id = chat_id, bot = context.bot)
 
-    ais[chat_id].turn_into_command(update.message.text)
+    await ais[chat_id].turn_into_command(update.message.text)
 
 async def send_message(message, chat_id, bot):
     try:
