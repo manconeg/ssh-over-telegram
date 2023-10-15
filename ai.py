@@ -30,25 +30,25 @@ functions = [
                 "required": ["location"],
             },
         },
-        {
-            "name": "set_user_data",
-            "description": "Set some data about the user",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "key": {
-                        "type": "string",
-                        "description": "the name of the data being set",
-                    },
-                    "value": {
-                        "type": "string",
-                        "description": "the value of the data",
-                    }
-                    # "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
-                },
-                "required": ["location"],
-            },
-        }
+        # {
+        #     "name": "set_user_data",
+        #     "description": "Set some data about the user",
+        #     "parameters": {
+        #         "type": "object",
+        #         "properties": {
+        #             "key": {
+        #                 "type": "string",
+        #                 "description": "the name of the data being set",
+        #             },
+        #             "value": {
+        #                 "type": "string",
+        #                 "description": "the value of the data",
+        #             }
+        #             # "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+        #         },
+        #         "required": ["location"],
+        #     },
+        # }
     ]
 
 class Ai:
