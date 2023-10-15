@@ -1,4 +1,4 @@
 python_telegram_bot~=20.6
-aiohttp~=3.8
+aiohttp==3.8.2
 paramiko~=3.0
 openai~=0.28
