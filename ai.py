@@ -28,24 +28,45 @@ functions = [
                 },
                 "required": ["location"],
             },
+        },
+        {
+            "name": "set_user_data",
+            "description": "Set some data about the user",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "the name of the data being set",
+                    },
+                    "value": {
+                        "type": "string",
+                        "description": "the value of the data",
+                    }
+                    # "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+                },
+                "required": ["location"],
+            },
         }
     ]
 
 class Ai:
-    messages = [ {"role": "system", "content": system} ]
     callback = False
+    user_data: dict[str, str] = {}
 
     def __init__(self, client: Client):
         self.client = client
         client.callback = self.processClientMessage
         self.available_functions = {
             "send_command_to_terminal": client.send,
+            "set_user_data": self.set_user_data,
         }
 
     async def turn_into_command(self, chat: str):
-        self.messages.append( 
-                {"role": "user", "content": chat}, 
-            )
+        self.messages = [ {"role": "system", "content": system} ]
+        for key in self.user_data:
+            self.messages.append({"role": "system", "content": f'{key}={self.user_data[key]}'})
+        self.messages.append({"role": "user", "content": chat})
 
         response = openai.ChatCompletion.create( 
             model="gpt-3.5-turbo",
@@ -62,10 +83,13 @@ class Ai:
             function_name = response_message["function_call"]["name"]
             function_to_call = self.available_functions[function_name]
             function_args = json.loads(response_message["function_call"]["arguments"])
-            function_to_call(function_args.get("command"))
-        else:
-            await self.callback(response.choices[0].message)
+            function_to_call(**function_args)
+        
+        return response_message.content
     
+    def set_user_data(self, key, value):
+        self.user_data[key] = value
+
     async def processClientMessage(self, clientMessage):
         self.messages.append( 
             {"role": "function", "name": "send_command_to_terminal", "content": clientMessage}, 

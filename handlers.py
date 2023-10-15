@@ -40,9 +40,12 @@ async def shell(update: Update, context: CallbackContext, connection_info):
         ais[chat_id] = Ai(Client(connection_info))
         ais[chat_id].callback = partial(send_message, chat_id = chat_id, bot = context.bot)
 
-    await ais[chat_id].turn_into_command(update.message.text)
+    response = await ais[chat_id].turn_into_command(update.message.text)
+    if response:
+        await send_message(response, chat_id, context.bot)
 
 async def send_message(message, chat_id, bot):
+    print(f'sending ${message}')
     try:
         msgs = [message[i:i + 4096] for i in range(0, len(message), 4096)]
         for text in msgs:
