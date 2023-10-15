@@ -1,5 +1,7 @@
 import openai 
 import os
+import json
+from client import Client
 
 openai.api_key = os.environ["openaiToken"]
 
@@ -10,9 +12,34 @@ system4 = "NEVER reply using invalid bash commands."
 
 system = system1 + system2 + system3 + system4
 
+functions = [
+        {
+            "name": "send_command_to_terminal",
+            "description": "Send a command to the user's terminal",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {
+                        "type": "string",
+                        "description": "The bash command to run for the user",
+                    },
+                    # "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+                },
+                "required": ["location"],
+            },
+        }
+    ]
 
 class Ai:
     messages = [ {"role": "system", "content": system} ]
+
+    def __init__(self, client: Client, callback):
+        self.client = client
+        self.callback = callback
+        self.client.callback = self.add_result
+        self.available_functions = {
+            "send_command_to_terminal": client.send,
+        }
 
     def turn_into_command(self, chat: str):
         self.messages.append( 
@@ -20,16 +47,24 @@ class Ai:
             )
 
         response = openai.ChatCompletion.create( 
-                model="gpt-3.5-turbo", messages=self.messages 
-            )
+            model="gpt-3.5-turbo",
+            messages=self.messages,
+            functions=functions
+        )
 
-        command = response.choices[0].message.content
+        response_message = response.choices[0].message
 
-        self.messages.append({"role": "assistant", "content": command})
-
-        return command
+        print (f'Response {response_message}')
+        self.messages.append(response_message)
+        
+        if response_message.get("function_call"):
+            function_name = response_message["function_call"]["name"]
+            function_to_call = self.available_functions[function_name]
+            function_args = json.loads(response_message["function_call"]["arguments"])
+            function_to_call(function_args.get("command"))
     
-    def add_result(self, result: str):
+    async def add_result(self, result: str):
         self.messages.append( 
                 {"role": "system", "content": result}, 
             )
+        await self.callback(result)

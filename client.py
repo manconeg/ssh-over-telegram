@@ -16,12 +16,12 @@ class Client:
     buffer = ""
     running: bool = True
     timeout = .01
+    callback = False
 
-    def __init__(self, client_info, callback):
+    def __init__(self, client_info):
         self.connection_info = client_info
         self.client = get_client(client_info)
         self.stdin, self.stdout, self.stderr = self.client.exec_command("/bin/bash")
-        self.callback = callback
         self.listenStdin = threading.Thread(target=self._listenStdin)
         self.listenStderr = threading.Thread(target=self._listenStderr)
         self.sendMessage = asyncio.create_task(self._sendMessage())
@@ -39,16 +39,16 @@ class Client:
         self.thread.join()
 
     def _listenStdin(self):
-        print("listen")
+        print("listening to stdin")
         while self.running and (newLine := self.stdout.read(1).decode("utf-8")):
             self.buffer += newLine
-        print("stopping listener")
+        print("stopping stdin")
 
     def _listenStderr(self):
-        print("listen")
+        print("listen stderr")
         while self.running and (newLine := self.stderr.read(1).decode("utf-8")):
             self.buffer += newLine
-        print("stopping listener")
+        print("stopping stderr")
 
     async def _sendMessage(self):
         print("watching for messages")
@@ -66,16 +66,11 @@ class Client:
                 await asyncio.sleep(.2)
 
             print (f"sending message {localBuffer}")
-            try:
-                msgs = [localBuffer[i:i + 4096] for i in range(0, len(localBuffer), 4096)]
-                for text in msgs:
-                    await self.callback(text)
-            except Exception as e:
-                print(f'Exception {e}')
+            await self.callback(localBuffer)
             localBuffer = ""
         print("stopping messager")
 
     def send(self, command) -> None:
-        print(command)
+        print(f'got command {command}')
         self.stdin.write(command + '\n')
         self.stdin.flush()

@@ -37,17 +37,14 @@ async def shell(update: Update, context: CallbackContext, connection_info):
 
     chat_id = update.message.chat_id
     if chat_id not in ais:
-        ais[chat_id] = Ai()
+        ais[chat_id] = Ai(Client(connection_info), partial(send_message, chat_id = chat_id, bot = context.bot))
 
-    command = ais[chat_id].turn_into_command(update.message.text)
+    ais[chat_id].turn_into_command(update.message.text)
 
-    logger.info(f'Running command: {command}')
-
-    if chat_id not in clients:
-        clients[chat_id] = Client(connection_info, partial(send_message, chat_id = chat_id, bot = context.bot))
-    
-    clients[chat_id].send(command)
-
-async def send_message(text, chat_id, bot):
-    ais[chat_id].add_result(text)
-    await bot.send_message(chat_id, text)
+async def send_message(message, chat_id, bot):
+    try:
+        msgs = [message[i:i + 4096] for i in range(0, len(message), 4096)]
+        for text in msgs:
+            await bot.send_message(chat_id, text)
+    except Exception as e:
+        print(f'Exception {e}')
