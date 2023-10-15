@@ -25,8 +25,6 @@ class Client:
         self.listenStdin = threading.Thread(target=self._listenStdin)
         self.listenStderr = threading.Thread(target=self._listenStderr)
         self.sendMessage = asyncio.create_task(self._sendMessage())
-        self.stdin._set_mode('b')
-        self.stderr._set_mode('b')
         self.listenStdin.daemon = True
         self.listenStderr.daemon = True
         self.listenStdin.start()
@@ -40,13 +38,13 @@ class Client:
 
     def _listenStdin(self):
         print("listening to stdin")
-        while self.running and (newLine := self.stdout.read(1).decode("utf-8")):
+        while self.running and (newLine := self.stdout.readline()):
             self.buffer += newLine
         print("stopping stdin")
 
     def _listenStderr(self):
         print("listen stderr")
-        while self.running and (newLine := self.stderr.read(1).decode("utf-8")):
+        while self.running and (newLine := self.stderr.readline()):
             self.buffer += newLine
         print("stopping stderr")
 
