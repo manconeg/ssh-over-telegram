@@ -92,7 +92,7 @@ class Ai:
 
             content = response_message.content
         except Exception as err:
-            content = err.error_message
+            content = "error"
 
         return content
     
