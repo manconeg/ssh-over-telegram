@@ -72,11 +72,18 @@ class Ai:
             self.messages.append(message)
         self.messages.append({"role": "user", "content": chat})
 
-        response = openai.ChatCompletion.create( 
-            model="gpt-3.5-turbo",
-            messages=self.messages,
-            functions=functions
-        )
+        try:
+            response = openai.ChatCompletion.create( 
+                model="gpt-3.5-turbo",
+                messages=self.messages,
+                functions=functions
+            )
+        except Exception as err:
+            response = {
+                choices: [
+                    { message: e }
+                ]
+            }
 
         response_message = response.choices[0].message
 
