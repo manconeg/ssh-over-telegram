@@ -80,19 +80,21 @@ class Ai:
             )
 
             response_message = response.choices[0].message
-        except Exception as err:
-            response_message = err
 
-        print (f'Response {response_message}')
-        self.messages.append(response_message)
+            print (f'Response {response_message}')
+            self.messages.append(response_message)
         
-        if response_message.get("function_call"):
-            function_name = response_message["function_call"]["name"]
-            function_to_call = self.available_functions[function_name]
-            function_args = json.loads(response_message["function_call"]["arguments"])
-            function_to_call(**function_args)
-        
-        return response_message.content
+            if response_message.get("function_call"):
+                function_name = response_message["function_call"]["name"]
+                function_to_call = self.available_functions[function_name]
+                function_args = json.loads(response_message["function_call"]["arguments"])
+                function_to_call(**function_args)
+
+            content = response_message.content
+        except Exception as err:
+            content = err
+
+        return content
     
     def set_user_data(self, key, value):
         self.user_data[key] = value
