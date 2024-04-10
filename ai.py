@@ -78,14 +78,10 @@ class Ai:
                 messages=self.messages,
                 functions=functions
             )
-        except Exception as err:
-            response = json.loads({
-                "choices": [
-                    { "message": err }
-                ]
-            })
 
-        response_message = response.choices[0].message
+            response_message = response.choices[0].message
+        except Exception as err:
+            response_message = err
 
         print (f'Response {response_message}')
         self.messages.append(response_message)
