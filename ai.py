@@ -72,29 +72,24 @@ class Ai:
             self.messages.append(message)
         self.messages.append({"role": "user", "content": chat})
 
-        try:
-            response = openai.ChatCompletion.create( 
-                model="gpt-3.5-turbo",
-                messages=self.messages,
-                functions=functions
-            )
+        response = openai.ChatCompletion.create( 
+            model="gpt-3.5-turbo",
+            messages=self.messages,
+            functions=functions
+        )
 
-            response_message = response.choices[0].message
+        response_message = response.choices[0].message
 
-            print (f'Response {response_message}')
-            self.messages.append(response_message)
-        
-            if response_message.get("function_call"):
-                function_name = response_message["function_call"]["name"]
-                function_to_call = self.available_functions[function_name]
-                function_args = json.loads(response_message["function_call"]["arguments"])
-                function_to_call(**function_args)
+        print (f'Response {response_message}')
+        self.messages.append(response_message)
+    
+        if response_message.get("function_call"):
+            function_name = response_message["function_call"]["name"]
+            function_to_call = self.available_functions[function_name]
+            function_args = json.loads(response_message["function_call"]["arguments"])
+            function_to_call(**function_args)
 
-            content = response_message.content
-        except Exception as err:
-            content = "error"
-
-        return content
+        return response_message.content
     
     def set_user_data(self, key, value):
         self.user_data[key] = value
