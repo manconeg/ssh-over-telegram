@@ -79,11 +79,11 @@ class Ai:
                 functions=functions
             )
         except Exception as err:
-            response = {
+            response = json.loads({
                 "choices": [
                     { "message": err }
                 ]
-            }
+            })
 
         response_message = response.choices[0].message
 
