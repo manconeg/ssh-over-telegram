@@ -81,7 +81,7 @@ class Ai:
         except Exception as err:
             response = {
                 choices: [
-                    { message: e }
+                    { message: err }
                 ]
             }
 
