@@ -7,7 +7,7 @@ import signal
 import time
 import logging
 
-log = logger.getLogger("ssh-client")
+log = logging.getLogger("ssh-client")
 
 class Client:
     client: paramiko.SSHClient = None
