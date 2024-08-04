@@ -4,7 +4,6 @@ from paramiko.channel import ChannelStdinFile, ChannelFile, ChannelStderrFile
 import threading
 import asyncio
 import signal
-import time
 import logging
 
 log = logging.getLogger("ssh-client")
@@ -72,12 +71,12 @@ class Client:
             localBuffer = ""
         log.info("stopping messager")
 
-    def send(self, command) -> str:
+    async def send(self, command) -> str:
         log.info(f'got command {command}')
         self.stdin.write(command + '\n')
         self.stdin.flush()
         while (self.toSend is False):
-            time.sleep(.2)
+            await asyncio.sleep(.2)
         send = self.toSent
         self.toSend = False
         return send

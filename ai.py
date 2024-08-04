@@ -117,7 +117,7 @@ class Ai:
                 function_name = tool.function.name
                 function_to_call = self.available_functions[function_name]
                 function_args = json.loads(tool.function.arguments)
-                result = function_to_call(**function_args)
+                result = await function_to_call(**function_args)
 
                 log.info("Tool responded: %s", result)
 

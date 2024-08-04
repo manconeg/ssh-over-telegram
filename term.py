@@ -8,7 +8,7 @@ logging.basicConfig()
 log.setLevel(logging.INFO)
 
 class Client:
-    def send(self, command):
+    async def send(self, command):
         print (command)
         return ""
 
