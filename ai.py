@@ -112,12 +112,14 @@ class Ai:
 
         if run.status == 'requires_action':
             for tool in run.required_action.submit_tool_outputs.tool_calls:
-                log.info("Calling tool)
+                log.info("Calling tool")
                 log.debug(tool)
                 function_name = tool.function.name
                 function_to_call = self.available_functions[function_name]
                 function_args = json.loads(tool.function.arguments)
                 result = function_to_call(**function_args)
+
+                log.info("Tool responded: %s", result)
 
                 tool_outputs = []
                 tool_outputs.append({
@@ -125,11 +127,15 @@ class Ai:
                     "output": result,
                 })
 
+                log.info("Sending to gpt")
+
                 run = client.beta.threads.runs.submit_tool_outputs_and_poll(
                     thread_id=thread.id,
                     run_id=run.id,
                     tool_outputs=tool_outputs
                 )
+
+                log.info("gpt received")
         
         if run.status == 'completed':
             messages = client.beta.threads.messages.list(
