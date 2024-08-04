@@ -6,7 +6,7 @@ from ai import Ai
 import logging
 from functools import partial
 
-logger = logging.getLogger()
+log = logging.getLogger()
 
 clients: dict[str, Client] = {}
 ais: dict[str, Ai] = {}
@@ -16,14 +16,14 @@ async def check_user(update: Update, context: CallbackContext, username: str):
         raise ApplicationHandlerStop
 
 async def start(update: Update, context: CallbackContext):
-    logger.info('Received start command')
+    log.info('Received start command')
     text = "Hello. If you are new here or want to change your ssh key pair, run /newkey. " \
            "Please note that this command will overwrite old private key."
     await update.message.reply_text(text=text)
 
 
 async def new_key(update: Update, context: CallbackContext, path_to_keys: str):
-    logger.info('Received newkey command')
+    log.info('Received newkey command')
     public = get_public_save_private_key(path_to_keys)
     await update.message.reply_text(text=public.decode('utf-8'))
     text = "You have just received the public key. " \
@@ -33,7 +33,7 @@ async def new_key(update: Update, context: CallbackContext, path_to_keys: str):
     await update.message.reply_text(text=text)
 
 async def shell(update: Update, context: CallbackContext, connection_info):
-    logger.info(f'Received chat: {update.message.text}')
+    log.info(f'Received chat: {update.message.text}')
 
     chat_id = update.message.chat_id
     if chat_id not in ais:

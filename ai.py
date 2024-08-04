@@ -6,7 +6,7 @@ import time
 from client import Client
 import logging
 
-logger = logging.getLogger("ai")
+log = logging.getLogger("ai")
 
 client = OpenAI(
     api_key = os.environ["openaiToken"]
@@ -31,7 +31,7 @@ systemPrompt = [
 
 system = " ".join(systemPrompt)
 
-logger.debug(system)
+log.debug(system)
 
 functions = [
         {
@@ -92,7 +92,7 @@ class Ai:
         self.available_functions["send_command_to_terminal"] = client.send
 
     async def turn_into_command(self, chat: str):
-        logger.info (f'Got command {chat}')
+        log.info (f'Got command {chat}')
 	
         message = client.beta.threads.messages.create(
             thread_id=thread.id,
@@ -107,12 +107,12 @@ class Ai:
         )
 
         while (run.status != 'completed' and run.status != 'requires_action'):
-            logger.debug(run.status)
+            log.debug(run.status)
             time.sleep(1)
 
         if run.status == 'requires_action':
             for tool in run.required_action.submit_tool_outputs.tool_calls:
-                logger.debug(tool)
+                log.debug(tool)
                 function_name = tool.function.name
                 function_to_call = self.available_functions[function_name]
                 function_args = json.loads(tool.function.arguments)
@@ -134,9 +134,9 @@ class Ai:
             messages = client.beta.threads.messages.list(
                 thread_id=thread.id
             )
-            logger.debug(messages)
+            log.debug(messages)
             message = messages.data[0].content[0].text.value
-            logger.info(message)
+            log.info(message)
 
     def set_user_data(self, key, value):
         self.user_data[key] = value
