@@ -1,7 +1,6 @@
 from openai import OpenAI 
 import os
 import json
-import time
 from client import Client
 import logging
 
@@ -21,7 +20,7 @@ class Ai:
     def __init__(self, client: Client):
         self.client = client
         self.available_functions = {
-            "send_command_to_terminal": client.send,
+            'send_command_to_terminal': client.send,
         }
 
     async def turn_into_command(self, chat: str):
@@ -29,7 +28,7 @@ class Ai:
 	
         message = openAi.beta.threads.messages.create(
             thread_id=self.thread.id,
-            role="user",
+            role='user',
             content=chat,
         )        
 
@@ -40,27 +39,26 @@ class Ai:
         )
 
         while run.status != 'completed':
-            log.info(run.status)
-            time.sleep(1)
+            log.info(f'Run status: {run.status}')
 
             if run.status == 'requires_action':
                 tool_outputs = []
                 for tool in run.required_action.submit_tool_outputs.tool_calls:
-                    log.info("Calling tool %s" % tool.id)
+                    log.info(f'Calling tool {tool.id}')
                     log.debug(tool)
                     function_name = tool.function.name
                     function_to_call = self.available_functions[function_name]
                     function_args = json.loads(tool.function.arguments)
                     result = await function_to_call(**function_args)
 
-                    log.info("Tool responded: %s", result)
+                    log.info(f'Tool responded: {result}')
 
                     tool_outputs.append({
                         "tool_call_id": tool.id,
                         "output": result,
                     })
 
-                log.info("Sending to gpt")
+                log.info(f'Sending to gpt')
 
                 run = openAi.beta.threads.runs.submit_tool_outputs_and_poll(
                     thread_id=self.thread.id,
@@ -68,7 +66,7 @@ class Ai:
                     tool_outputs=tool_outputs
                 )
 
-                log.info("gpt received")
+                log.info(f'gpt received')
 
         messages = openAi.beta.threads.messages.list(
             thread_id=self.thread.id
@@ -76,4 +74,4 @@ class Ai:
         log.debug(messages)
         message = messages.data[0].content[0].text.value
         log.info(message)
-        return message
+        return f'{self.thread.thread_id} - {message}'

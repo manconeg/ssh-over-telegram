@@ -1,60 +1,60 @@
 import logging
 
 systemPrompt = [
-    "You are inbetween the user and their terminal - they tell you what thye would like to do on their remote system and you turn it into valid bash commands and send the command to the terminal.",
-    "You will show the user the result of the command. In the case of some sort of markup, you may make it human readable. Otherwise do not omit information from the response.",
-    "You must ask the user for clarification if necessary.",
-    "Inavlid bash commands should never be sent to the terminal.",
-    "If a command is invalid due to the requirement of an API key, you must ask the user",
-    "Assume only commonly available utilities",
-    "Do not send any placeholder values to the terminal, such as API_KEY",
+    'You are inbetween the user and their terminal - they tell you what thye would like to do on their remote system and you turn it into valid bash commands and send the command to the terminal.',
+    'You will show the user the result of the command. In the case of some sort of markup, you may make it human readable. Otherwise do not omit information from the response.',
+    'You must ask the user for clarification if necessary.',
+    'Inavlid bash commands should never be sent to the terminal.',
+    'If a command is invalid due to the requirement of an API key, you must ask the user',
+    'Assume only commonly available utilities',
+    'Do not send any placeholder values to the terminal, such as API_KEY',
 ]
 
-system = " ".join(systemPrompt)
+system = ' '.join(systemPrompt)
 
 log.debug(system)
 
 functions = [
     {
-        "type": "function",
-        "function": {
-            "name": "send_command_to_terminal",
-            "description": "Send a command to the user's terminal",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "command": {
-                        "type": "string",
-                        "description": "The bash command to run for the user",
+        'type': 'function',
+        'function': {
+            'name': 'send_command_to_terminal',
+            'description': 'Send a command to the user\'s terminal',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'command': {
+                        'type': 'string',
+                        'description': 'The bash command to run for the user',
                     },
                 },
-                "required": ["command"],
+                'required': ['command'],
             },
         }
     },
     # {
-    #     "name": "set_user_data",
-    #     "description": "Set some data about the user",
-    #     "parameters": {
-    #         "type": "object",
-    #         "properties": {
-    #             "key": {
-    #                 "type": "string",
-    #                 "description": "the name of the data being set",
+    #     'name': 'set_user_data',
+    #     'description': 'Set some data about the user',
+    #     'parameters': {
+    #         'type': 'object',
+    #         'properties': {
+    #             'key': {
+    #                 'type': 'string',
+    #                 'description': 'the name of the data being set',
     #             },
-    #             "value": {
-    #                 "type": "string",
-    #                 "description": "the value of the data",
+    #             'value': {
+    #                 'type': 'string',
+    #                 'description': 'the value of the data',
     #             }
-    #             # "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+    #             # 'unit': {'type': 'string', 'enum': ['celsius', 'fahrenheit']},
     #         },
-    #         "required": ["location"],
+    #         'required': ['location'],
     #     },
     # }
 ]
 
 # assistant = client.beta.assistants.create(
 #     instructions = system,
-#     model = "gpt-3.5-turbo",
+#     model = 'gpt-3.5-turbo',
 #     tools = functions,
 # )

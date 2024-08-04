@@ -17,8 +17,8 @@ async def check_user(update: Update, context: CallbackContext, username: str):
 
 async def start(update: Update, context: CallbackContext):
     log.info('Received start command')
-    text = "Hello. If you are new here or want to change your ssh key pair, run /newkey. " \
-           "Please note that this command will overwrite old private key."
+    text = 'Hello. If you are new here or want to change your ssh key pair, run /newkey. ' \
+           'Please note that this command will overwrite old private key.'
     await update.message.reply_text(text=text)
 
 
@@ -26,10 +26,10 @@ async def new_key(update: Update, context: CallbackContext, path_to_keys: str):
     log.info('Received newkey command')
     public = get_public_save_private_key(path_to_keys)
     await update.message.reply_text(text=public.decode('utf-8'))
-    text = "You have just received the public key. " \
-           "Private key was stored in the directory from which the bot is running. " \
-           "Please, add it to the authorized keys on the server. " \
-           "This can be done, by appending public key to server's authorized_keys file (~/.ssh/authorized_keys)."
+    text = 'You have just received the public key. ' \
+           'Private key was stored in the directory from which the bot is running. ' \
+           'Please, add it to the authorized keys on the server. ' \
+           'This can be done, by appending public key to server\'s authorized_keys file (~/.ssh/authorized_keys).'
     await update.message.reply_text(text=text)
 
 messages_to_thread = {}

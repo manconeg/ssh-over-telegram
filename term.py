@@ -10,8 +10,8 @@ log.setLevel(logging.INFO)
 class Client:
     async def send(self, command):
         print (command)
-        return ""
+        return ''
 
 ai = Ai(Client())
-if __name__ == "__main__":
+if __name__ == '__main__':
     asyncio.run(ai.turn_into_command(' '.join(sys.argv[1:])))

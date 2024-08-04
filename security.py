@@ -47,7 +47,7 @@ def get_client(connection_info) -> paramiko.SSHClient:
         os.mkdir(path_to_keys)
     key_path = path_to_keys + PRIVATE_KEY
     if not os.path.exists(key_path):
-        logger.error(msg='No keys at: %s' % key_path)
+        logger.error(msg=f'No keys at: {key_path}')
         return None
     client = paramiko.SSHClient()
 
