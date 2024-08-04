@@ -74,4 +74,4 @@ class Ai:
         log.debug(messages)
         message = messages.data[0].content[0].text.value
         log.info(message)
-        return f'{self.thread.thread_id} - {message}'
+        return f'{self.thread.id} - {message}'
