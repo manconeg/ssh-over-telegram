@@ -144,6 +144,7 @@ class Ai:
             log.debug(messages)
             message = messages.data[0].content[0].text.value
             log.info(message)
+            return message
 
     def set_user_data(self, key, value):
         self.user_data[key] = value
