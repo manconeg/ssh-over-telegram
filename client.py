@@ -73,7 +73,7 @@ class Client:
         self.stdin.write(command + '\n')
         self.stdin.flush()
         while (self.toSend is False):
-            asyncio.sleep(.2)
+            await asyncio.sleep(.2)
         send = self.toSent
         self.toSend = False
         return send
