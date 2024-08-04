@@ -16,7 +16,7 @@ class Client:
     buffer = ""
     running: bool = True
     timeout = .01
-    callback = False
+    toSend = False
 
     def __init__(self, client_info):
         self.connection_info = client_info
@@ -64,11 +64,16 @@ class Client:
                 await asyncio.sleep(.2)
 
             print (f"sending message {localBuffer}")
-            await self.callback(localBuffer)
+            self.toSend = localBuffer
             localBuffer = ""
         print("stopping messager")
 
-    def send(self, command) -> None:
+    def send(self, command) -> str:
         print(f'got command {command}')
         self.stdin.write(command + '\n')
         self.stdin.flush()
+        while (self.toSend is False):
+            asyncio.sleep(.2)
+        send = self.toSent
+        self.toSend = False
+        return send
