@@ -8,8 +8,7 @@ from functools import partial
 import logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger()
-
+log = logging.getLogger()
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -41,7 +40,7 @@ def parse_args():
 if __name__ == '__main__':
     tg_username, tg_secret, username, hostname, port, path_to_keys = parse_args()
     connection_info = (username, hostname, port, path_to_keys)
-    logger.info('Connection info:', connection_info)
+    log.info('Connection info: %s', connection_info)
 
     application: Application = Application.builder().token(tg_secret).build()
 
