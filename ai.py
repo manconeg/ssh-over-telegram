@@ -12,16 +12,10 @@ client = OpenAI(
     api_key = os.environ["openaiToken"]
 )
 
-#system1 = "The user will speak to the assistant and the assistant will respond with bash commands that perform the user's requested action. The complete response should be valid bash. No text that is not valid bash should be used. "
-#system2 = "There is no reason to explain what the commands do in English. Act as if the commands are being entered directly into a shell. "
-#system3 = "If files or directories are mentioned, the files should be located on the disk - their location should not be assumed. "
-#system4 = "Assume all directories are the current directory unless otherwise stated. Use telegram markup but do not add a preamble."
-#system5 = "Ask for missing API keys before executing code. Attempt to execute code immediately after recieving key."
-
-#system = system1 + system2 + system3 + system4
 
 systemPrompt = [
     "You are inbetween the user and their terminal - they tell you what thye would like to do on their remote system and you turn it into valid bash commands and send the command to the terminal.",
+    "You will show the user the result of the command. In the case of some sort of markup, you may make it human readable. Otherwise do not omit information from the response.",
     "You must ask the user for clarification if necessary.",
     "Inavlid bash commands should never be sent to the terminal.",
     "If a command is invalid due to the requirement of an API key, you must ask the user",
