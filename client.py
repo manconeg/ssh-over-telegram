@@ -4,6 +4,7 @@ from paramiko.channel import ChannelStdinFile, ChannelFile, ChannelStderrFile
 import threading
 import asyncio
 import signal
+import time
 
 class Client:
     client: paramiko.SSHClient = None
@@ -73,7 +74,7 @@ class Client:
         self.stdin.write(command + '\n')
         self.stdin.flush()
         while (self.toSend is False):
-            await asyncio.sleep(.2)
+            time.sleep(.2)
         send = self.toSent
         self.toSend = False
         return send

@@ -108,7 +108,7 @@ class Ai:
 
         while (run.status != 'completed' and run.status != 'requires_action'):
             log.info(run.status)
-            await time.sleep(1)
+            time.sleep(1)
 
         if run.status == 'requires_action':
             for tool in run.required_action.submit_tool_outputs.tool_calls:
