@@ -73,7 +73,7 @@ class Client:
 
     async def send(self, command) -> str:
         log.info(f'got command {command}')
-        self.stdin.write(command + '; echo done\n')
+        self.stdin.write(command + '; echo **EXECUTION COMPLETE**\n')
         self.stdin.flush()
         while self.output_buffer is False:
             await asyncio.sleep(.1)

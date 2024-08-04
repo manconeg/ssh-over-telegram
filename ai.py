@@ -22,7 +22,6 @@ class Ai:
         self.client = client
         self.available_functions = {
             "send_command_to_terminal": client.send,
-            "set_user_data": self.set_user_data,
         }
 
     async def turn_into_command(self, chat: str):
@@ -40,25 +39,26 @@ class Ai:
             #instructions="Please address the user as Jane Doe. The user has a premium account.",
         )
 
-        while run.status != 'completed' and run.status != 'requires_action':
+        while run.status != 'completed':
             log.info(run.status)
             time.sleep(1)
 
-        if run.status == 'requires_action':
-            for tool in run.required_action.submit_tool_outputs.tool_calls:
-                log.info("Calling tool")
-                log.debug(tool)
-                function_name = tool.function.name
-                function_to_call = self.available_functions[function_name]
-                function_args = json.loads(tool.function.arguments)
-                result = await function_to_call(**function_args)
+            if run.status == 'requires_action':
+                tool_outputs = []
+                for tool in run.required_action.submit_tool_outputs.tool_calls:
+                    log.info("Calling tool %s" % tool.id)
+                    log.debug(tool)
+                    function_name = tool.function.name
+                    function_to_call = self.available_functions[function_name]
+                    function_args = json.loads(tool.function.arguments)
+                    result = await function_to_call(**function_args)
 
-                log.info("Tool responded: %s", result)
+                    log.info("Tool responded: %s", result)
 
-                tool_outputs = [{
-                    "tool_call_id": tool.id,
-                    "output": result,
-                }]
+                    tool_outputs.append({
+                        "tool_call_id": tool.id,
+                        "output": result,
+                    })
 
                 log.info("Sending to gpt")
 
@@ -69,15 +69,11 @@ class Ai:
                 )
 
                 log.info("gpt received")
-        
-        if run.status == 'completed':
-            messages = openAi.beta.threads.messages.list(
-                thread_id=self.thread.id
-            )
-            log.debug(messages)
-            message = messages.data[0].content[0].text.value
-            log.info(message)
-            return message
 
-    def set_user_data(self, key, value):
-        self.user_data[key] = value
+        messages = openAi.beta.threads.messages.list(
+            thread_id=self.thread.id
+        )
+        log.debug(messages)
+        message = messages.data[0].content[0].text.value
+        log.info(message)
+        return message
