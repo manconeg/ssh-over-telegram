@@ -9,7 +9,7 @@ from functools import partial
 log = logging.getLogger()
 
 clients: dict[str, Client] = {}
-ais: dict[str, Ai] = {}
+ais: dict[str, dict[str, Ai]] = {}
 
 async def check_user(update: Update, context: CallbackContext, username: str):
     if update.message.from_user.username != username:
@@ -32,23 +32,45 @@ async def new_key(update: Update, context: CallbackContext, path_to_keys: str):
            "This can be done, by appending public key to server's authorized_keys file (~/.ssh/authorized_keys)."
     await update.message.reply_text(text=text)
 
+messages_to_thread = {}
+
+def get_thread_id(message):
+    if message.reply_to_message is None:
+        messages_to_thread[message.message_id] = message.message_id
+    else:
+        messages_to_thread[message.message_id] = messages_to_thread[message.reply_to_message.message_id]
+    return messages_to_thread[message.message_id]
+
 async def shell(update: Update, context: CallbackContext, connection_info):
     log.info(f'Received chat: {update.message.text}')
 
     chat_id = update.message.chat_id
+
+    thread_id = get_thread_id(update.message)
+
+    log.info(f'Thread id: %s' % thread_id)
+
     if chat_id not in ais:
-        ais[chat_id] = Ai(Client(connection_info))
-        ais[chat_id].callback = partial(send_message, chat_id = chat_id, bot = context.bot)
+        ais[chat_id] = {}
 
-    response = await ais[chat_id].turn_into_command(update.message.text)
+    if thread_id not in ais[chat_id]:
+        ais[chat_id][thread_id] = Ai(Client(connection_info))
+        ais[chat_id][thread_id].callback = partial(send_message, chat_id = chat_id, bot = context.bot)
+
+    response = await ais[chat_id][thread_id].turn_into_command(update.message.text)
     if response:
-        await send_message(response, chat_id, context.bot)
+        await send_message(response, chat_id, context.bot, update.message.message_id)
 
-async def send_message(message, chat_id, bot):
+async def send_message(message, chat_id, bot, reply_to_message_id):
     print(f'sending ${message}')
     try:
         msgs = [message[i:i + 4096] for i in range(0, len(message), 4096)]
         for text in msgs:
-            await bot.send_message(chat_id, text)
+            msg = await bot.send_message(
+                chat_id = chat_id,
+                text = text,
+                reply_to_message_id = reply_to_message_id,
+            )
+            get_thread_id(msg)
     except Exception as e:
         print(f'Exception {e}')
