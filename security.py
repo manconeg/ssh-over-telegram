@@ -45,15 +45,16 @@ def get_client(connection_info) -> paramiko.SSHClient:
     username, hostname, port, path_to_keys = connection_info
     if not os.path.exists(path_to_keys):
         os.mkdir(path_to_keys)
-    keyPath = path_to_keys + PRIVATE_KEY
-    if not os.path.exists(keyPath):
+    key_path = path_to_keys + PRIVATE_KEY
+    if not os.path.exists(key_path):
+        logger.error(msg='No keys at: %s' % key_path)
         return None
     client = paramiko.SSHClient()
 
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # TODO change it in future updates
 
     try:
-        client.connect(username=username, hostname=hostname, port=port, key_filename=keyPath, allow_agent=False, look_for_keys=False)
+        client.connect(username=username, hostname=hostname, port=port, key_filename=key_path, allow_agent=False, look_for_keys=False)
     except (BadHostKeyException, SSHException):
         logger.error(msg='Cannot establish connection', exc_info=True)
         return None

@@ -16,18 +16,18 @@ class Client:
     stderr: ChannelStderrFile = None
     listenStdin: threading.Thread
     listenStderr: threading.Thread
-    buffer = ""
+    input_buffer = ""
+    output_buffer = False
     running: bool = True
     timeout = .01
-    toSend = False
 
     def __init__(self, client_info):
         self.connection_info = client_info
         self.client = get_client(client_info)
         self.stdin, self.stdout, self.stderr = self.client.exec_command("/bin/bash")
-        self.listenStdin = threading.Thread(target=self._listenStdin)
-        self.listenStderr = threading.Thread(target=self._listenStderr)
-        self.sendMessage = asyncio.create_task(self._sendMessage())
+        self.listenStdin = threading.Thread(target=self._listen_stdin)
+        self.listenStderr = threading.Thread(target=self._listen_stderr)
+        self.sendMessage = asyncio.create_task(self._buffer_output())
         self.listenStdin.daemon = True
         self.listenStderr.daemon = True
         self.listenStdin.start()
@@ -39,44 +39,44 @@ class Client:
         self.running = False
         self.thread.join()
 
-    def _listenStdin(self):
+    def _listen_stdin(self):
         log.info("listening to stdin")
-        while self.running and (newLine := self.stdout.readline()):
-            self.buffer += newLine
+        while self.running and (new_line := self.stdout.readline()):
+            self.input_buffer += new_line
         log.info("stopping stdin")
 
-    def _listenStderr(self):
+    def _listen_stderr(self):
         log.info("listen stderr")
-        while self.running and (newLine := self.stderr.readline()):
-            self.buffer += newLine
+        while self.running and (new_line := self.stderr.readline()):
+            self.input_buffer += new_line
         log.info("stopping stderr")
 
-    async def _sendMessage(self):
+    async def _buffer_output(self):
         log.info("watching for messages")
-        localBuffer = ""
-        lastBuffer = ""
+        local_buffer = ""
+        last_buffer = ""
         while self.running:
             log.info("running")
 
-            while not localBuffer or (lastBuffer != localBuffer):
-                lastBuffer = localBuffer
-                if self.buffer:
-                    newLine = self.buffer
-                    self.buffer = ""
-                    localBuffer += newLine
+            while not local_buffer or (last_buffer != local_buffer):
+                last_buffer = local_buffer
+                if self.input_buffer is not False:
+                    new_line = self.input_buffer
+                    self.input_buffer = ""
+                    local_buffer += new_line
                 await asyncio.sleep(.2)
 
-            log.info(f"sending message {localBuffer}")
-            self.toSend = localBuffer
-            localBuffer = ""
-        log.info("stopping messager")
+            log.info(f"sending message {local_buffer}")
+            self.output_buffer = local_buffer
+            local_buffer = ""
+        log.info("stopping messenger")
 
     async def send(self, command) -> str:
         log.info(f'got command {command}')
-        self.stdin.write(command + '\n')
+        self.stdin.write(command + '; echo done\n')
         self.stdin.flush()
-        while (self.toSend is False):
-            await asyncio.sleep(.2)
-        send = self.toSend
-        self.toSend = False
-        return send
+        while self.output_buffer is False:
+            await asyncio.sleep(.1)
+        output = self.output_buffer
+        self.output_buffer = False
+        return output

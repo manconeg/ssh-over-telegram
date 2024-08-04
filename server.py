@@ -34,6 +34,7 @@ def parse_args():
         cs.get('port', 22),
         cs.get('path_to_keys', './')
     ]
+    log.info(to_return)
     return to_return
 
 
