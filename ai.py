@@ -4,6 +4,9 @@ import json
 import queue
 import time
 from client import Client
+import logging
+
+logger = logging.getLogger("ai")
 
 client = OpenAI(
     api_key = os.environ["openaiToken"]
@@ -28,7 +31,7 @@ systemPrompt = [
 
 system = " ".join(systemPrompt)
 
-print(system)
+logger.debug(system)
 
 functions = [
         {
@@ -88,11 +91,8 @@ class Ai:
         }
         self.available_functions["send_command_to_terminal"] = client.send
 
-    def print_command(self, command):
-        print(command)
-
     async def turn_into_command(self, chat: str):
-        print (f'Got command {chat}')
+        logger.info (f'Got command {chat}')
 	
         message = client.beta.threads.messages.create(
             thread_id=thread.id,
@@ -107,23 +107,21 @@ class Ai:
         )
 
         while (run.status != 'completed' and run.status != 'requires_action'):
-            print(run.status)
+            logger.debug(run.status)
             time.sleep(1)
 
         if run.status == 'requires_action':
             for tool in run.required_action.submit_tool_outputs.tool_calls:
-                print(tool)
+                logger.debug(tool)
                 function_name = tool.function.name
                 function_to_call = self.available_functions[function_name]
                 function_args = json.loads(tool.function.arguments)
-                result = await function_to_call(**function_args)
-
-                run = await self.processClientMessage(result, tool.id)
+                result = function_to_call(**function_args)
 
                 tool_outputs = []
                 tool_outputs.append({
                     "tool_call_id": tool.id,
-                    "output": clientMessage,
+                    "output": result,
                 })
 
                 run = client.beta.threads.runs.submit_tool_outputs_and_poll(
@@ -136,7 +134,9 @@ class Ai:
             messages = client.beta.threads.messages.list(
                 thread_id=thread.id
             )
-            print(messages.data[0].content[0].text.value)
-    
+            logger.debug(messages)
+            message = messages.data[0].content[0].text.value
+            logger.info(message)
+
     def set_user_data(self, key, value):
         self.user_data[key] = value
