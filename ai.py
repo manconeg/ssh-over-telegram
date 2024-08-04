@@ -13,11 +13,10 @@ openAi = OpenAI(
 
 assistant = openAi.beta.assistants.retrieve("asst_O8HrTJBPKc7Xiw87aFct8ehi")
 
-thread = openAi.beta.threads.create()
-
 class Ai:
     callback = False
     user_data: dict[str, str] = {}
+    thread = openAi.beta.threads.create()
 
     def __init__(self, client: Client):
         self.client = client
@@ -30,13 +29,13 @@ class Ai:
         log.info (f'Got command {chat}')
 	
         message = openAi.beta.threads.messages.create(
-            thread_id=thread.id,
+            thread_id=self.thread.id,
             role="user",
             content=chat,
         )        
 
         run = openAi.beta.threads.runs.create_and_poll(
-            thread_id=thread.id,
+            thread_id=self.thread.id,
             assistant_id=assistant.id,
             #instructions="Please address the user as Jane Doe. The user has a premium account.",
         )
@@ -64,7 +63,7 @@ class Ai:
                 log.info("Sending to gpt")
 
                 run = openAi.beta.threads.runs.submit_tool_outputs_and_poll(
-                    thread_id=thread.id,
+                    thread_id=self.thread.id,
                     run_id=run.id,
                     tool_outputs=tool_outputs
                 )
@@ -73,7 +72,7 @@ class Ai:
         
         if run.status == 'completed':
             messages = openAi.beta.threads.messages.list(
-                thread_id=thread.id
+                thread_id=self.thread.id
             )
             log.debug(messages)
             message = messages.data[0].content[0].text.value
