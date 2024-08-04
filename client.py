@@ -5,6 +5,9 @@ import threading
 import asyncio
 import signal
 import time
+import logging
+
+log = logger.getLogger("ssh-client")
 
 class Client:
     client: paramiko.SSHClient = None
@@ -38,23 +41,23 @@ class Client:
         self.thread.join()
 
     def _listenStdin(self):
-        print("listening to stdin")
+        log.info("listening to stdin")
         while self.running and (newLine := self.stdout.readline()):
             self.buffer += newLine
-        print("stopping stdin")
+        log.info("stopping stdin")
 
     def _listenStderr(self):
-        print("listen stderr")
+        log.info("listen stderr")
         while self.running and (newLine := self.stderr.readline()):
             self.buffer += newLine
-        print("stopping stderr")
+        log.info("stopping stderr")
 
     async def _sendMessage(self):
-        print("watching for messages")
+        log.info("watching for messages")
         localBuffer = ""
         lastBuffer = ""
         while self.running:
-            print("running")
+            log.info("running")
 
             while not localBuffer or (lastBuffer != localBuffer):
                 lastBuffer = localBuffer
@@ -64,13 +67,13 @@ class Client:
                     localBuffer += newLine
                 await asyncio.sleep(.2)
 
-            print (f"sending message {localBuffer}")
+            log.info(f"sending message {localBuffer}")
             self.toSend = localBuffer
             localBuffer = ""
-        print("stopping messager")
+        log.info("stopping messager")
 
     def send(self, command) -> str:
-        print(f'got command {command}')
+        log.info(f'got command {command}')
         self.stdin.write(command + '\n')
         self.stdin.flush()
         while (self.toSend is False):
