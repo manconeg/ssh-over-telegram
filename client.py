@@ -24,7 +24,7 @@ class Client:
     def __init__(self, client_info):
         self.connection_info = client_info
         self.client = get_client(client_info)
-        self.stdin, self.stdout, self.stderr = self.client.exec_command('/bin/bash')
+        self.stdin, self.stdout, self.stderr = self.client.exec_command('$SHELL')
         self.listenStdin = threading.Thread(target=self._listen_stdin)
         self.listenStderr = threading.Thread(target=self._listen_stderr)
         self.sendMessage = asyncio.create_task(self._buffer_output())
