@@ -1,10 +1,11 @@
+import logging
+import os
+
+import paramiko
+from cryptography.hazmat.backends import default_backend as crypto_default_backend
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.backends import default_backend as crypto_default_backend
-import paramiko
 from paramiko.ssh_exception import BadHostKeyException, SSHException
-import os
-import logging
 
 PUBLIC_KEY = 'public.key'
 PRIVATE_KEY = 'private.key'
@@ -47,8 +48,7 @@ def get_client(connection_info) -> paramiko.SSHClient:
         os.mkdir(path_to_keys)
     key_path = path_to_keys + PRIVATE_KEY
     if not os.path.exists(key_path):
-        logger.error(msg=f'No keys at: {key_path}')
-        return None
+        raise Exception(f'No keys at: {key_path}')
     client = paramiko.SSHClient()
 
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # TODO change it in future updates
@@ -56,6 +56,5 @@ def get_client(connection_info) -> paramiko.SSHClient:
     try:
         client.connect(username=username, hostname=hostname, port=port, key_filename=key_path, allow_agent=False, look_for_keys=False)
     except (BadHostKeyException, SSHException):
-        logger.error(msg='Cannot establish connection', exc_info=True)
-        return None
+        raise Exception(f'Cannot establish connection: {key_path}')
     return client

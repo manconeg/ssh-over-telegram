@@ -2,3 +2,6 @@ __pycache__
 .idea
 config
 keys
+*.iml
+build
+*.egg-info

@@ -1,14 +1,17 @@
 import argparse
 import configparser
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
-from handlers import new_key, start, shell, check_user
+import logging
 from functools import partial
 
-import logging
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters
+
+from .lib.telegram.handlers import new_key, start, shell, check_user
+
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-log = logging.getLogger()
+log = logging.getLogger("server")
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -31,14 +34,14 @@ def parse_args():
         cs['tg_bot_token'],
         cs.get('username', None),
         cs['hostname'],
-        cs.get('port', 22),
+        cs.get('port', "22"),
         cs.get('path_to_keys', './')
     ]
     log.info(to_return)
     return to_return
 
 
-if __name__ == '__main__':
+def main():
     tg_username, tg_secret, username, hostname, port, path_to_keys = parse_args()
     connection_info = (username, hostname, port, path_to_keys)
     log.info('Connection info: %s', connection_info)
@@ -49,7 +52,7 @@ if __name__ == '__main__':
 
     application.add_handler(CommandHandler('start', start))
 
-    application.add_handler(CommandHandler('newkey', partial(new_key, path_to_keys=path_to_keys)))
+    application.add_handler(CommandHandler('new_key', partial(new_key, path_to_keys=path_to_keys)))
 
     application.add_handler(MessageHandler(filters.TEXT, partial(shell, connection_info=connection_info)))
 
